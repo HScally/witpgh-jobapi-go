@@ -1,13 +1,11 @@
 package main
-// go mod init
-// go mod tidy
-// go mod vendor
-mport (
+
+import (
 	"log"
 	"net/http"
 	"os"
 	"runtime"
-	"witpgh-jobapi-go/app/shared/database"
+	"witgph-jobapi-go/app/shared/database"
 
 	"github.com/joho/godotenv"
 )
