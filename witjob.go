@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"witgph-jobapi-go/app/shared/database"
+	"witpgh-jobapi-go/app/shared/database"
 
 	"github.com/joho/godotenv"
 )
