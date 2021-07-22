@@ -128,5 +128,107 @@ func (repository *EmployerJobRepository) GetEmployerJobsByEmployerId(employerId 
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (repository *EmployerJobRepository) GetEmployerRemoteJobs() (*EmployerJob, error) {
+	employerJobs = make([]EmployerJob, 0)
+
+	rows, err := repository.db.Prepare("select
+			id,
+			public_id,
+			employer_id,
+			employer_company_id,
+			is_closed,
+			job_title,
+			company_hq,
+			job_type_id,
+			regional_restriction_id,
+			job_description,
+		from employers_jobs
+		where regional_restriction_id = 1").Scan(
+		&result.Id, 
+		&result.PublicId, 
+		&result.EmployerId, 
+		&result.employerCompanyId, 
+		&result.isClosed, 
+		&result.JobTitle, 
+		&result.CompanyHq, 
+		&result.JobTypeId, 
+		&result.RegionalRestrictionId, 
+		&result.JobDescription)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.Query(1)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+
+	var employerJob EmployerJob
+
+	for rows.Next() {
+        employerJobs = append(employerJobs, user)
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
 }	
 
+
+func (repository *EmployerJobRepository) GetEmployerJobsByRegion(regionalRestrictionId int) (*EmployerJob, error) {
+	employerJobs = make([]EmployerJob, 0)
+
+	rows, err := repository.db.Prepare("select
+			id,
+			public_id,
+			employer_id,
+			employer_company_id,
+			is_closed,
+			job_title,
+			company_hq,
+			job_type_id,
+			regional_restriction_id,
+			job_description,
+		from employers_jobs
+		where regional_restriction_id = $1", regionalRestrictionId).Scan(
+		&result.Id, 
+		&result.PublicId, 
+		&result.EmployerId, 
+		&result.employerCompanyId, 
+		&result.isClosed, 
+		&result.JobTitle, 
+		&result.CompanyHq, 
+		&result.JobTypeId, 
+		&result.RegionalRestrictionId, 
+		&result.JobDescription)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.Query(1)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+
+	var employerJob EmployerJob
+
+	for rows.Next() {
+        employerJobs = append(employerJobs, user)
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+}	
