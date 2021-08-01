@@ -3,9 +3,11 @@ package accountmanagement_test
 import (
 	"witpgh-jobapi-go/app/shared/database"
 	"witpgh-jobapi-go/app/shared/repositories"
+	"witpgh-jobapi-go/app/shared/services/system/generation"
 
-	"log"
 	"os"
+	"fmt"
+	"log"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -14,7 +16,7 @@ import (
 
 func TestAddNewEmployer(t *testing.T) {
 	os.Clearenv()
-	err := godotenv.Load("/Users/jschmitz/projects/go/src/witpgh-jobapi-go/doc.env")
+	err := godotenv.Load("/Users/jschmitz/src/witpgh-jobapi-go/doc.env")
 
 	if err != nil {
 		log.Print(err)
@@ -24,10 +26,19 @@ func TestAddNewEmployer(t *testing.T) {
 		assert := assert.New(t)
 
 		var myRepository = repositories.NewRepositoryRegistry().GetEmployerAccountRepository()
-		p, err := myRepository.AddNewEmployer("abcd", "xyz", "test@test.com", "pasword123", "Test", "Client")
+
+		// Generate random digits for each primary key
+		var genService = generation.NewGenerationService()
+		var publicId = genService.GeneratePublicId()
+		var companyId = genService.GeneratePublicId()
+		var emailAddressBody = genService.GeneratePublicId()
+		email := fmt.Sprintf("%s@test.com", emailAddressBody)
+
+		p, err := myRepository.AddNewEmployer(publicId, companyId, email, "pasword123", "Test", "Client")
 
 		assert.Nil(err)
-		assert.Equal(p, 1, "Are Equal")
-		assert.True(p.PublicId == "abcd")
+		assert.NotNil(p)
+		assert.True(p.Id > 1)
+		assert.True(p.PublicId == publicId)
 	}
 }
