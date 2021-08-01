@@ -5,6 +5,7 @@ import (
 	"witpgh-jobapi-go/app/shared/database"
 	"witpgh-jobapi-go/app/shared/repositories/accountmanagement"
 	"witpgh-jobapi-go/app/shared/repositories/jobmanagement"
+	"witpgh-jobapi-go/app/shared/repositories/companymanagement"
 )
 
 type RepositoryRegistry struct {
@@ -20,4 +21,8 @@ func (registry *RepositoryRegistry) GetEmployerAccountRepository() *accountmanag
 
 func (registry *RepositoryRegistry) GetEmployerJobRepository() *jobmanagement.EmployerJobRepository {
 	return jobmanagement.NewJobRepository(database.WITPGH)
+}
+
+func (registry *RepositoryRegistry) GetEmployerCompanyRepository() *companymanagement.EmployerCompanyRepository {
+	return companymanagement.NewEmployerCompanyRepository(database.WITPGH)
 }

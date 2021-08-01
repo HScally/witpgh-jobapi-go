@@ -7,15 +7,15 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type AccountRepository struct {
+type EmployerCompanyRepository struct {
 	db *sql.DB
 }
 
-func NewAccountRepository(db *sql.DB) *AccountRepository {
-	return &AccountRepository{db}
+func NewEmployerCompanyRepository(db *sql.DB) *EmployerCompanyRepository {
+	return &EmployerCompanyRepository{db}
 }
 
-func (repository *AccountRepository) AddNewEmployerCompany(
+func (repository *EmployerCompanyRepository) AddNewEmployerCompany(
 	publicId string,
 	employerId string,
 	companyName string,
@@ -74,7 +74,7 @@ func (repository *AccountRepository) AddNewEmployerCompany(
 	return repository.GetEmployerCompanyById(employerCompanyId)
 }
 
-func (repository *AccountRepository) GetEmployerCompanyById(employerCompanyId int) (*EmployerCompanies, error) {
+func (repository *EmployerCompanyRepository) GetEmployerCompanyById(employerCompanyId int) (*EmployerCompanies, error) {
 	var result EmployerCompanies
 
 	err := repository.db.QueryRow(`
