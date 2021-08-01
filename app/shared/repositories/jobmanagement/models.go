@@ -1,3 +1,5 @@
+package jobmanagement
+
 type EmployerJob struct {
 	Id                    int    `json:"id"`
 	PublicId			  string `json:"public_id"`

@@ -1,6 +1,5 @@
 package accountmanagement
 
-
 type EmployerCompanies struct {
 	Id					int    `json:"id"`	
 	PublicId			string `json:"public_id"`
