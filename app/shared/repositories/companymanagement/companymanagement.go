@@ -17,7 +17,7 @@ func NewEmployerCompanyRepository(db *sql.DB) *EmployerCompanyRepository {
 
 func (repository *EmployerCompanyRepository) AddNewEmployerCompany(
 	publicId string,
-	employerId string,
+	employerId int,
 	companyName string,
 	companyStatment	string,
 	companyLogo string,
@@ -42,16 +42,17 @@ func (repository *EmployerCompanyRepository) AddNewEmployerCompany(
 	}
 
 	var hasLogo int
-	if (companyLogo != nil && companyLogo != '') {
+	if (companyLogo != "") {
 		hasLogo = 1
 	} else {
 		hasLogo = 0
 	}
 
-	stmtErr := stmt.QueryRow(publicId,
+	stmtErr := stmt.QueryRow(
+		publicId,
 		employerId,
-		companyName,
 		1,
+		companyName,
 		companyStatment,
 		companyLogo,
 		hasLogo,
@@ -77,8 +78,9 @@ func (repository *EmployerCompanyRepository) AddNewEmployerCompany(
 func (repository *EmployerCompanyRepository) GetEmployerCompanyById(employerCompanyId int) (*EmployerCompanies, error) {
 	var result EmployerCompanies
 
-	err := repository.db.QueryRow(`
-	select id,
+	err := repository.db.QueryRow(
+		`select
+		id,
 		public_id,
 		employer_id,
 		status,
@@ -96,7 +98,8 @@ func (repository *EmployerCompanyRepository) GetEmployerCompanyById(employerComp
 		country,
 		latitude,
 		longitude
-		where id = $1 limit 1`, employerCompanyId).Scan(
+    from employer_companies
+	where id = $1 limit 1`, employerCompanyId).Scan(
 			&result.Id,
 			&result.PublicId,
 			&result.EmployerId,
