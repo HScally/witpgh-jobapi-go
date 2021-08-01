@@ -36,10 +36,12 @@ func (repository *AccountRepository) AddNewEmployer(publicId string, employerKey
 
 func (repository *AccountRepository) GetEmployerById(employerId int) (*Employer, error) {
 	var result Employer
+
 	err := repository.db.QueryRow(`select id, public_id, employer_key, status, email, password, must_reset_password, firstname, lastname, send_mobile_notices from employers where id = $1 limit 1`, employerId).Scan(&result.Id, &result.PublicId, &result.EmployerKey, &result.Status, &result.Email, &result.Password, &result.MustResetPassword, &result.Firstname, &result.Lastname, &result.SendMobileNotices)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Println(err)
 			return nil, err
 		} else {
 			log.Println(err)
@@ -47,4 +49,63 @@ func (repository *AccountRepository) GetEmployerById(employerId int) (*Employer,
 	}
 
 	return &result, err
+}
+
+func (repository *AccountRepository) UpdateEmployerPassword(employerKey string, password string) (*Employer, error) {
+	var employerId int
+	stmt, err := repository.db.Prepare(`UPDATE employers SET password = $2 WHERE employer_key = $1 RETURNING id`)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	stmtErr := stmt.QueryRow(employerKey, password).Scan(&employerId)
+
+	if stmtErr != nil {
+		log.Println(stmtErr)
+		return nil, err
+	}
+
+	return repository.GetEmployerById(employerId)
+}
+
+func (repository *AccountRepository) UpdateEmployerEmail(employerKey string, email string) (*Employer, error) {
+	var employerId int
+	stmt, err := repository.db.Prepare(`UPDATE employers SET email = $2 WHERE employer_key = $1 RETURNING id`)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	stmtErr := stmt.QueryRow(employerKey, email).Scan(&employerId)
+
+	if stmtErr != nil {
+		log.Println(stmtErr)
+		return nil, err
+	}
+
+	return repository.GetEmployerById(employerId)
+}
+
+func (repository *AccountRepository) UpdateEmployerMobileNotice(employerKey string, sendMobileNotices int) (*Employer, error) {
+	var employerId int
+	// TODO: Refactor all these functions to remove duplciation/DRY
+	// We can also write a private function to construct the SQL command
+	stmt, err := repository.db.Prepare(`UPDATE employers SET send_mobile_notices = $2 WHERE employer_key = $1 RETURNING id`)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	stmtErr := stmt.QueryRow(employerKey, sendMobileNotices).Scan(&employerId)
+
+	if stmtErr != nil {
+		log.Println(stmtErr)
+		return nil, err
+	}
+
+	return repository.GetEmployerById(employerId)
 }
