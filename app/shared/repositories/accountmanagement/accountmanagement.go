@@ -17,7 +17,7 @@ func NewAccountRepository(db *sql.DB) *AccountRepository {
 
 func (repository *AccountRepository) AddNewEmployer(publicId string, employerKey string, email string, password string, firstname string, lastname string) (*Employer, error) {
 	var employerId int
-	stmt, err := repository.db.Prepare(`INSERT into employers ("public_id", "employer_key", "status", "email", "password", "must_reset_password", "firstname", "lastname", "send_mobile_notices") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`)
+	stmt, err := repository.db.Prepare(`INSERT into employers (public_id, employer_key, status, email, password, must_reset_password, firstname, lastname, send_mobile_notices) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`)
 
 	if err != nil {
 		log.Println(err)
@@ -27,6 +27,7 @@ func (repository *AccountRepository) AddNewEmployer(publicId string, employerKey
 	stmtErr := stmt.QueryRow(publicId, employerKey, 1, email, password, 1, firstname, lastname, 0).Scan(&employerId)
 
 	if stmtErr != nil {
+		log.Println(stmtErr)
 		return nil, err
 	}
 
@@ -35,7 +36,7 @@ func (repository *AccountRepository) AddNewEmployer(publicId string, employerKey
 
 func (repository *AccountRepository) GetEmployerById(employerId int) (*Employer, error) {
 	var result Employer
-	err := repository.db.QueryRow("select id, public_id, employer_key, status, email, password, must_reset_password, firstname, lastname, send_mobile_notices from employers where id = $1 limit 1", employerId).Scan(&result.Id, &result.PublicId, &result.EmployerKey, &result.Status, &result.Email, &result.Password, &result.MustResetPassword, &result.Firstname, &result.Lastname, &result.SendMobileNotices)
+	err := repository.db.QueryRow(`select id, public_id, employer_key, status, email, password, must_reset_password, firstname, lastname, send_mobile_notices from employers where id = $1 limit 1`, employerId).Scan(&result.Id, &result.PublicId, &result.EmployerKey, &result.Status, &result.Email, &result.Password, &result.MustResetPassword, &result.Firstname, &result.Lastname, &result.SendMobileNotices)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
