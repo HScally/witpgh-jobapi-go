@@ -16,31 +16,33 @@ func NewJobRepository(db *sql.DB) *EmployerJobRepository {
 }
 
 func (repository *EmployerJobRepository) AddNewEmployerJob(
-	publicId string, 
+	publicId string,
 	employerId int,
-	EmployerCompanyId int,
-	JobTitle string,
-	CompanyHq string,
-	JobTypeId int,
-	RegionalRestrictionId int,
-	JobDescription string) (*EmployerJob , error) {
+	employerCompanyId int,
+	jobTitle string,
+	companyHq string,
+	jobTypeId int,
+	regionalRestrictionId int,
+	jobDescription string) (*EmployerJob , error) {
 
 	var jobId int
-	stmt, err := repository.db.Prepare(`INSERT into employers_jobs ("public_id", "employer_id", "employer_company_id", "is_closed", "job_title", "company_hq", "job_type_id", "regional_restriction_id", "job_description", ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`)
-	
+	stmt, err := repository.db.Prepare(`INSERT into employer_jobs (public_id, employer_id, employer_company_id, is_closed, job_title, company_hq, job_type_id, regional_restriction_id, job_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`)
+
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	stmtErr := stmt.QueryRow(publicId, employerId, employerCompanyId, 0, JobTitle, CompanyHq, JobTypeId, RegionalRestrictionId, JobDescription).Scan(&employerId)
+	stmtErr := stmt.QueryRow(publicId, employerId, employerCompanyId, 0, jobTitle, companyHq, jobTypeId, regionalRestrictionId, jobDescription).Scan(&jobId)
 
 	if stmtErr != nil {
+		log.Println(stmtErr)
 		return nil, err
 	}
 
-	return repository.GetEmployerJobById(employerId)
-	}
+	return repository.GetEmployerJobById(jobId)
+}
+
 
 func (repository *EmployerJobRepository) GetEmployerJobById(employerJobId int) (*EmployerJob, error) {
 	var result EmployerJob
@@ -54,17 +56,17 @@ func (repository *EmployerJobRepository) GetEmployerJobById(employerJobId int) (
 		company_hq,
 		job_type_id,
 		regional_restriction_id,
-		job_description,
-	from employers_jobs where id = $1 limit 1`, employerJobId).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
+		job_description
+	from employer_jobs where id = $1 limit 1`, employerJobId).Scan(
+		&result.Id,
+		&result.PublicId,
+		&result.EmployerId,
+		&result.EmployerCompanyId,
+		&result.IsClosed,
+		&result.JobTitle,
+		&result.CompanyHq,
+		&result.JobTypeId,
+		&result.RegionalRestrictionId,
 		&result.JobDescription)
 
 	if err != nil {
@@ -78,353 +80,353 @@ func (repository *EmployerJobRepository) GetEmployerJobById(employerJobId int) (
 	return &result, err
 }
 
-func (repository *EmployerJobRepository) GetEmployerJobsByEmployerId(employerId int) (*EmployerJob, error) {
-	employerJobs = make([]EmployerJob, 0)
+// func (repository *EmployerJobRepository) GetEmployerJobsByEmployerId(employerId int) (*EmployerJob, error) {
+// 	employerJobs = make([]EmployerJob, 0)
 
-	rows, err := repository.db.Prepare(`select
-			id,
-			public_id,
-			employer_id,
-			employer_company_id,
-			is_closed,
-			job_title,
-			company_hq,
-			job_type_id,
-			regional_restriction_id,
-			job_description,
-		from employers_jobs
-		where employer_id = $1 limit 1`, employerId).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
-		&result.JobDescription)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	rows, err := repository.db.Prepare(`select
+// 			id,
+// 			public_id,
+// 			employer_id,
+// 			employer_company_id,
+// 			is_closed,
+// 			job_title,
+// 			company_hq,
+// 			job_type_id,
+// 			regional_restriction_id,
+// 			job_description,
+// 		from employers_jobs
+// 		where employer_id = $1 limit 1`, employerId).Scan(
+// 		&result.Id,
+// 		&result.PublicId,
+// 		&result.EmployerId,
+// 		&result.employerCompanyId,
+// 		&result.isClosed,
+// 		&result.JobTitle,
+// 		&result.CompanyHq,
+// 		&result.JobTypeId,
+// 		&result.RegionalRestrictionId,
+// 		&result.JobDescription)
 
-	defer stmt.Close()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	rows, err = stmt.Query(1)
+// 	defer stmt.Close()
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	rows, err = stmt.Query(1)
 
-	defer rows.Close()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	var employerJob EmployerJob
+// 	defer rows.Close()
 
-	for rows.Next() {
-        employerJobs = append(employerJobs, user)
+// 	var employerJob EmployerJob
 
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	}
-}
+// 	for rows.Next() {
+//         employerJobs = append(employerJobs, user)
 
-func (repository *EmployerJobRepository) GetEmployerRemoteJobs() (*EmployerJob, error) {
-	employerJobs = make([]EmployerJob, 0)
+// 	if err = rows.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	}
+// }
 
-	rows, err := repository.db.Prepare(`select
-			id,
-			public_id,
-			employer_id,
-			employer_company_id,
-			is_closed,
-			job_title,
-			company_hq,
-			job_type_id,
-			regional_restriction_id,
-			job_description,
-		from employers_jobs
-		where regional_restriction_id = 1`).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
-		&result.JobDescription)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+// func (repository *EmployerJobRepository) GetEmployerRemoteJobs() (*EmployerJob, error) {
+// 	employerJobs = make([]EmployerJob, 0)
 
-	defer stmt.Close()
+// 	rows, err := repository.db.Prepare(`select
+// 			id,
+// 			public_id,
+// 			employer_id,
+// 			employer_company_id,
+// 			is_closed,
+// 			job_title,
+// 			company_hq,
+// 			job_type_id,
+// 			regional_restriction_id,
+// 			job_description,
+// 		from employers_jobs
+// 		where regional_restriction_id = 1`).Scan(
+// 		&result.Id,
+// 		&result.PublicId,
+// 		&result.EmployerId,
+// 		&result.employerCompanyId,
+// 		&result.isClosed,
+// 		&result.JobTitle,
+// 		&result.CompanyHq,
+// 		&result.JobTypeId,
+// 		&result.RegionalRestrictionId,
+// 		&result.JobDescription)
 
-	rows, err = stmt.Query(1)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	defer stmt.Close()
 
-	defer rows.Close()
+// 	rows, err = stmt.Query(1)
 
-	var employerJob EmployerJob
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	for rows.Next() {
-        employerJobs = append(employerJobs, user)
+// 	defer rows.Close()
 
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	}		
-}
+// 	var employerJob EmployerJob
 
-func (repository *EmployerJobRepository) GetEmployerJobsByRegion(regionalRestrictionId int) (*EmployerJob, error) {
-	employerJobs = make([]EmployerJob, 0)
+// 	for rows.Next() {
+//         employerJobs = append(employerJobs, user)
 
-	rows, err := repository.db.Prepare(`select
-			id,
-			public_id,
-			employer_id,
-			employer_company_id,
-			is_closed,
-			job_title,
-			company_hq,
-			job_type_id,
-			regional_restriction_id,
-			job_description,
-		from employers_jobs
-		where regional_restriction_id = $1`, regionalRestrictionId).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
-		&result.JobDescription)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	if err = rows.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	}
+// }
 
-	defer stmt.Close()
+// func (repository *EmployerJobRepository) GetEmployerJobsByRegion(regionalRestrictionId int) (*EmployerJob, error) {
+// 	employerJobs = make([]EmployerJob, 0)
 
-	rows, err = stmt.Query(1)
+// 	rows, err := repository.db.Prepare(`select
+// 			id,
+// 			public_id,
+// 			employer_id,
+// 			employer_company_id,
+// 			is_closed,
+// 			job_title,
+// 			company_hq,
+// 			job_type_id,
+// 			regional_restriction_id,
+// 			job_description,
+// 		from employers_jobs
+// 		where regional_restriction_id = $1`, regionalRestrictionId).Scan(
+// 		&result.Id,
+// 		&result.PublicId,
+// 		&result.EmployerId,
+// 		&result.employerCompanyId,
+// 		&result.isClosed,
+// 		&result.JobTitle,
+// 		&result.CompanyHq,
+// 		&result.JobTypeId,
+// 		&result.RegionalRestrictionId,
+// 		&result.JobDescription)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	defer rows.Close()
+// 	defer stmt.Close()
 
-	var employerJob EmployerJob
+// 	rows, err = stmt.Query(1)
 
-	for rows.Next() {
-        employerJobs = append(employerJobs, user)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	}
-}
+// 	defer rows.Close()
 
-func (repository *EmployerJobRepository) GetEmployerOpenJobsByEmployerId(employerId int) (*EmployerJob, error) {
-	employerJobs = make([]EmployerJob, 0)
+// 	var employerJob EmployerJob
 
-	rows, err := repository.db.Prepare(`select
-			id,
-			public_id,
-			employer_id,
-			employer_company_id,
-			is_closed,
-			job_title,
-			company_hq,
-			job_type_id,
-			regional_restriction_id,
-			job_description,
-		from employers_jobs
-		where is_closed = 0 and employer_id = $1 limit 1`, employerId).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
-		&result.JobDescription)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	for rows.Next() {
+//         employerJobs = append(employerJobs, user)
 
-	defer stmt.Close()
+// 	if err = rows.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	}
+// }
 
-	rows, err = stmt.Query(1)
+// func (repository *EmployerJobRepository) GetEmployerOpenJobsByEmployerId(employerId int) (*EmployerJob, error) {
+// 	employerJobs = make([]EmployerJob, 0)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	rows, err := repository.db.Prepare(`select
+// 			id,
+// 			public_id,
+// 			employer_id,
+// 			employer_company_id,
+// 			is_closed,
+// 			job_title,
+// 			company_hq,
+// 			job_type_id,
+// 			regional_restriction_id,
+// 			job_description,
+// 		from employers_jobs
+// 		where is_closed = 0 and employer_id = $1 limit 1`, employerId).Scan(
+// 		&result.Id,
+// 		&result.PublicId,
+// 		&result.EmployerId,
+// 		&result.employerCompanyId,
+// 		&result.isClosed,
+// 		&result.JobTitle,
+// 		&result.CompanyHq,
+// 		&result.JobTypeId,
+// 		&result.RegionalRestrictionId,
+// 		&result.JobDescription)
 
-	defer rows.Close()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	var employerJob EmployerJob
+// 	defer stmt.Close()
 
-	for rows.Next() {
-        employerJobs = append(employerJobs, user)
+// 	rows, err = stmt.Query(1)
 
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	}
-}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-func (repository *EmployerJobRepository) GetEmployerOpenRemoteJobs() (*EmployerJob, error) {
-	employerJobs = make([]EmployerJob, 0)
+// 	defer rows.Close()
 
-	rows, err := repository.db.Prepare(`select
-			id,
-			public_id,
-			employer_id,
-			employer_company_id,
-			is_closed,
-			job_title,
-			company_hq,
-			job_type_id,
-			regional_restriction_id,
-			job_description,
-		from employers_jobs
-		where is_closed = 0 and regional_restriction_id = 1`).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
-		&result.JobDescription)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	var employerJob EmployerJob
 
-	defer stmt.Close()
+// 	for rows.Next() {
+//         employerJobs = append(employerJobs, user)
 
-	rows, err = stmt.Query(1)
+// 	if err = rows.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	}
+// }
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// func (repository *EmployerJobRepository) GetEmployerOpenRemoteJobs() (*EmployerJob, error) {
+// 	employerJobs = make([]EmployerJob, 0)
 
-	defer rows.Close()
+// 	rows, err := repository.db.Prepare(`select
+// 			id,
+// 			public_id,
+// 			employer_id,
+// 			employer_company_id,
+// 			is_closed,
+// 			job_title,
+// 			company_hq,
+// 			job_type_id,
+// 			regional_restriction_id,
+// 			job_description,
+// 		from employers_jobs
+// 		where is_closed = 0 and regional_restriction_id = 1`).Scan(
+// 		&result.Id,
+// 		&result.PublicId,
+// 		&result.EmployerId,
+// 		&result.employerCompanyId,
+// 		&result.isClosed,
+// 		&result.JobTitle,
+// 		&result.CompanyHq,
+// 		&result.JobTypeId,
+// 		&result.RegionalRestrictionId,
+// 		&result.JobDescription)
 
-	var employerJob EmployerJob
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	for rows.Next() {
-        employerJobs = append(employerJobs, user)
+// 	defer stmt.Close()
 
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	}
-}
+// 	rows, err = stmt.Query(1)
 
-func (repository *EmployerJobRepository) GetEmployerOpenJobsByRegion(regionalRestrictionId int) (*EmployerJob, error) {
-	employerJobs = make([]EmployerJob, 0)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	rows, err := repository.db.Prepare(`select
-			id,
-			public_id,
-			employer_id,
-			employer_company_id,
-			is_closed,
-			job_title,
-			company_hq,
-			job_type_id,
-			regional_restriction_id,
-			job_description,
-		from employers_jobs
-		where is_closed = 0 and regional_restriction_id = $1`, regionalRestrictionId).Scan(
-		&result.Id, 
-		&result.PublicId, 
-		&result.EmployerId, 
-		&result.employerCompanyId, 
-		&result.isClosed, 
-		&result.JobTitle, 
-		&result.CompanyHq, 
-		&result.JobTypeId, 
-		&result.RegionalRestrictionId, 
-		&result.JobDescription)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	defer rows.Close()
 
-	defer stmt.Close()
+// 	var employerJob EmployerJob
 
-	rows, err = stmt.Query(1)
+// 	for rows.Next() {
+//         employerJobs = append(employerJobs, user)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	if err = rows.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	}
+// }
 
-	defer rows.Close()
+// func (repository *EmployerJobRepository) GetEmployerOpenJobsByRegion(regionalRestrictionId int) (*EmployerJob, error) {
+// 	employerJobs = make([]EmployerJob, 0)
 
-	var employerJob EmployerJob
+// 	rows, err := repository.db.Prepare(`select
+// 			id,
+// 			public_id,
+// 			employer_id,
+// 			employer_company_id,
+// 			is_closed,
+// 			job_title,
+// 			company_hq,
+// 			job_type_id,
+// 			regional_restriction_id,
+// 			job_description,
+// 		from employers_jobs
+// 		where is_closed = 0 and regional_restriction_id = $1`, regionalRestrictionId).Scan(
+// 		&result.Id,
+// 		&result.PublicId,
+// 		&result.EmployerId,
+// 		&result.employerCompanyId,
+// 		&result.isClosed,
+// 		&result.JobTitle,
+// 		&result.CompanyHq,
+// 		&result.JobTypeId,
+// 		&result.RegionalRestrictionId,
+// 		&result.JobDescription)
 
-	for rows.Next() {
-        employerJobs = append(employerJobs, user)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	}
-}
+// 	defer stmt.Close()
 
-func (repository *EmployerJobRepository) CloseEmployerJob(employerJobId int) (*EmployerJob, error) {
-	var result EmployerJob
+// 	rows, err = stmt.Query(1)
 
-	stmt, err := repository.db.Prepare(`Update employers_jobs ("public_id", "employer_id", "employer_company_id", "is_closed", "job_title", "company_hq", "job_type_id", "regional_restriction_id", "job_description", ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	// err := repository.db.QueryRow(`select
-	// 	id,
-	// 	public_id,
-	// 	employer_id,
-	// 	employer_company_id,
-	// 	is_closed,
-	// 	job_title,
-	// 	company_hq,
-	// 	job_type_id,
-	// 	regional_restriction_id,
-	// 	job_description,
-	// from employers_jobs where id = $1 limit 1`, employerJobId).Scan(
-	// 	&result.Id, 
-	// 	&result.PublicId, 
-	// 	&result.EmployerId, 
-	// 	&result.employerCompanyId, 
-	// 	&result.isClosed, 
-	// 	&result.JobTitle, 
-	// 	&result.CompanyHq, 
-	// 	&result.JobTypeId, 
-	// 	&result.RegionalRestrictionId, 
-	// 	&result.JobDescription)
+// 	defer rows.Close()
 
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, err
-		} else {
-			log.Println(err)
-		}
-	}
+// 	var employerJob EmployerJob
 
-	return &result, err
-}
+// 	for rows.Next() {
+//         employerJobs = append(employerJobs, user)
+
+// 	if err = rows.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	}
+// }
+
+// func (repository *EmployerJobRepository) CloseEmployerJob(employerJobId int) (*EmployerJob, error) {
+// 	var result EmployerJob
+
+// 	stmt, err := repository.db.Prepare(`Update employers_jobs ("public_id", "employer_id", "employer_company_id", "is_closed", "job_title", "company_hq", "job_type_id", "regional_restriction_id", "job_description", ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`)
+
+// 	// err := repository.db.QueryRow(`select
+// 	// 	id,
+// 	// 	public_id,
+// 	// 	employer_id,
+// 	// 	employer_company_id,
+// 	// 	is_closed,
+// 	// 	job_title,
+// 	// 	company_hq,
+// 	// 	job_type_id,
+// 	// 	regional_restriction_id,
+// 	// 	job_description,
+// 	// from employers_jobs where id = $1 limit 1`, employerJobId).Scan(
+// 	// 	&result.Id,
+// 	// 	&result.PublicId,
+// 	// 	&result.EmployerId,
+// 	// 	&result.employerCompanyId,
+// 	// 	&result.isClosed,
+// 	// 	&result.JobTitle,
+// 	// 	&result.CompanyHq,
+// 	// 	&result.JobTypeId,
+// 	// 	&result.RegionalRestrictionId,
+// 	// 	&result.JobDescription)
+
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			return nil, err
+// 		} else {
+// 			log.Println(err)
+// 		}
+// 	}
+
+// 	return &result, err
+// }
